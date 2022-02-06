@@ -1,7 +1,7 @@
 {
 	"name": "service-ledger-frontend",
 	"version": "0.1.0",
-	"homepage": "https://Sacr3d.github.io/react-gh-pages",
+	"homepage": "https://Sacr3d.github.io/build",
 	"dependencies": {
 		"@headlessui/react": "^1.4.3",
 		"@heroicons/react": "^1.0.5",
