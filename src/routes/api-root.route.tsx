@@ -1,41 +1,27 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
-import APIRootComponent from "../components/APIRootComponent";
+import APIRootView from "../views/APIRoot";
 
 
-type APIRootState = {
-	api_root?: string
-};
+export interface IAPIRootState {
+	apiRootUrl?: string
+}
 
 export default function APIRoot() {
 
 
-	let apiRootState: APIRootState = {
-		api_root: undefined
+	let apiRootState: IAPIRootState = {
+		apiRootUrl: undefined
 	}
-
 
 	const location = useLocation()
 
 	if (location.state) {
 		const { state } = location;
-		apiRootState.api_root = (state as Record<string, string>).api_root
+		apiRootState.apiRootUrl = (state as Record<string, string>).apiRootUrl
 	}
 	return (
-		<>
-			<header className="bg-white shadow">
-				<div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-					<h1 className="text-3xl font-bold text-gray-900">API Root</h1>
-				</div>
-			</header>
-			<main>
-				<div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-					{/* Replace with your content */}
-					<APIRootComponent apiRoot={apiRootState.api_root} />
-					{/* /End replace */}
-				</div>
-			</main>
-		</>
+		<APIRootView apiRootUrl={apiRootState.apiRootUrl} />
 	)
 
 

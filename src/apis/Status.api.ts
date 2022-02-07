@@ -9,7 +9,6 @@ export const StatusAPI = {
 }
 
 function normalizeUrl(apiRootUrl: string, statusId: string) {
-	console.log(apiRootUrl.length);
 
 	if (apiRootUrl.match(new RegExp(/\/+$/))) {
 		return apiRootUrl + 'status/' + statusId

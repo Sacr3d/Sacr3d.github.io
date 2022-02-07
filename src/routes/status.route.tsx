@@ -15,13 +15,13 @@ type StatusDto = {
 }
 
 type StatusState = {
-	apiRoot?: string
+	apiRootUrl?: string
 	statusDto?: StatusDto
 };
 
 export default function Status() {
 	let statusState: StatusState = {
-		apiRoot: '',
+		apiRootUrl: undefined,
 		statusDto: undefined,
 	}
 
@@ -31,7 +31,7 @@ export default function Status() {
 
 	if (location.state) {
 		const { state } = location;
-		statusState.apiRoot = (state as Record<string, string>).apiRoot
+		statusState.apiRootUrl = (state as Record<string, string>).apiRootUrl
 		statusState.statusDto = (state as Record<string, StatusDto>).statusDto || undefined
 	}
 
@@ -45,7 +45,7 @@ export default function Status() {
 			<main>
 				<div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
 					{/* Replace with your content */}
-					<StatusComponent apiRoot={statusState.apiRoot} statusDto={statusState.statusDto} />
+					<StatusComponent apiRootUrl={statusState.apiRootUrl} statusDto={statusState.statusDto} />
 					{/* /End replace */}
 				</div>
 			</main>

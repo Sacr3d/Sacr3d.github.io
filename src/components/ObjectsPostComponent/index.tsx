@@ -1,6 +1,7 @@
 import React from "react";
 import { ObjectsAPI } from "../../apis/Objects.api";
 import ErrorModal, { ErrorDto } from "../ErrorModalComponent";
+import FormInput from "../FormComponent/FormInput";
 
 
 type StatusDto = {
@@ -18,7 +19,7 @@ type StatusDto = {
 
 type ObjectsPostState = {
 	collectionId?: string
-	apiRoot?: string
+	apiRootUrl?: string
 	objects: object[]
 	show: boolean;
 	error: ErrorDto;
@@ -29,7 +30,7 @@ export default class ObjectsPostComponent extends React.Component<any> {
 
 	public state: ObjectsPostState = {
 		collectionId: undefined,
-		apiRoot: undefined,
+		apiRootUrl: undefined,
 		objects: [],
 		show: false,
 		error: {
@@ -51,12 +52,12 @@ export default class ObjectsPostComponent extends React.Component<any> {
 	componentDidMount() {
 		this.multilineTextarea = React.createRef();
 		this.setState({
-			apiRoot: this.props.apiRoot,
+			apiRootUrl: this.props.apiRootUrl,
 			collectionId: this.props.collectionId
 		})
 	}
 
-	getObjects = () => {
+	getState = () => {
 		return this.state
 	}
 
@@ -90,10 +91,11 @@ export default class ObjectsPostComponent extends React.Component<any> {
 					const statusDto: StatusDto = response.data;
 
 					this.setState({
-						statusDto: statusDto
+						statusDto: statusDto,
+						apiRootUrl: apiRootInput
 					})
 
-					navigation('../status', { state: { statusDto: this.getObjects().statusDto, apiRoot: this.getObjects().apiRoot } })
+					navigation('../status', { state: { statusDto: this.getState().statusDto, apiRootUrl: this.getState().apiRootUrl } })
 				}
 			).catch((err) => {
 				this.setState({
@@ -113,36 +115,20 @@ export default class ObjectsPostComponent extends React.Component<any> {
 
 	render() {
 		return (<>
-			<ErrorModal show={this.getObjects().show} handleClose={this.hideModal} >
-				{this.getObjects().error}
+			<ErrorModal show={this.getState().show} handleClose={this.hideModal} >
+				{this.getState().error}
 			</ErrorModal>
 			<form onSubmit={this.onFormSubmit} className="mb-16">
-				<label htmlFor="price" className="block font-medium text-gray-700">
-					api-root
-				</label>
-				<div className="mt-1 relative rounded-md shadow-sm mb-8">
-					<input
-						type="text"
-						name="api-root"
-						id="api-root"
-						className="h-16 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 text-sm sm:text-lg border-gray-300 rounded-md"
-						placeholder="api-root"
-						defaultValue={this.getObjects().apiRoot}
-					/>
-				</div>
-				<label htmlFor="price" className="block font-medium text-gray-700">
-					collectionId
-				</label>
-				<div className="mt-1 relative rounded-md shadow-sm mb-8">
-					<input
-						type="text"
-						name="collectionId"
-						id="collectionId"
-						className="h-16 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 text-sm sm:text-lg border-gray-300 rounded-md"
-						placeholder="collectionId"
-						defaultValue={this.getObjects().collectionId}
-					/>
-				</div>
+				<FormInput
+					label="api-root"
+					height="h-16"
+					defaultValue={this.getState().apiRootUrl}
+				/>
+				<FormInput
+					label="collectionId"
+					height="h-16"
+					defaultValue={this.getState().collectionId}
+				/>
 				<div>
 					<label htmlFor="about" className="block text-sm font-medium text-gray-700">
 						Objects
@@ -180,17 +166,4 @@ export default class ObjectsPostComponent extends React.Component<any> {
 
 	}
 
-
-	private constructTitle(): React.ReactNode {
-
-		if (!this.getObjects().apiRoot) {
-			return ''
-		}
-
-		if (this.getObjects().apiRoot?.match(new RegExp(/\/+$/))) {
-			return (this.getObjects().apiRoot as string) + (this.getObjects().collectionId as string)
-		}
-
-		return (this.getObjects().apiRoot as string) + '/' + (this.getObjects().collectionId as string)
-	}
 }

@@ -45,7 +45,7 @@ export default class StatusComponent extends React.Component<any> {
 
 	componentDidMount() {
 		this.setState({
-			apiRootUrl: this.props.apiRoot,
+			apiRootUrl: this.props.apiRootUrl,
 			statusDto: this.props.statusDto
 		})
 	}
@@ -201,7 +201,7 @@ export default class StatusComponent extends React.Component<any> {
 																<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
 																	<NavLink
 																		to={'/objects/get'}
-																		state={{ apiRoot: this.getObjects().apiRootUrl, objectId: object[key as keyof typeof object] }}
+																		state={{ apiRootUrl: this.getObjects().apiRootUrl, objectId: object[key as keyof typeof object] }}
 																	>
 																		{object[key as keyof typeof object]}
 																	</NavLink>

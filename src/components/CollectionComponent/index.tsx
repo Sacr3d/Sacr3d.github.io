@@ -1,6 +1,9 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { CollectionAPI } from "../../apis/Collection.api";
+import DescriptionList from "../DescriptionListComponent";
+import DescriptionListItem from "../DescriptionListComponent/DescriptionListItem";
+import DescriptionListSublist from "../DescriptionListComponent/DescriptionListSublist";
 import ErrorModal, { ErrorDto } from "../ErrorModalComponent";
 
 type GetCollectionDto = {
@@ -13,20 +16,22 @@ type GetCollectionDto = {
 	media_types: string[]
 }
 
-type CollectionState = {
+interface ICollectionState {
 	collectionId?: string
 	apiRootUrl?: string
 	collection?: GetCollectionDto
+	title?: string
 	show: boolean;
 	error: ErrorDto;
 }
 
 export default class CollectionComponent extends React.Component<any> {
 
-	public state: CollectionState = {
+	public state: ICollectionState = {
 		collectionId: undefined,
 		apiRootUrl: undefined,
 		collection: undefined,
+		title: undefined,
 		show: false,
 		error: {
 			title: '',
@@ -43,12 +48,13 @@ export default class CollectionComponent extends React.Component<any> {
 
 	componentDidMount() {
 		this.setState({
-			apiRootUrl: this.props.apiRoot,
+			apiRootUrl: this.props.apiRootUrl,
 			collectionId: this.props.collectionId,
 		},
 			() => {
-				if (this.getCollection().apiRootUrl && this.getCollection().collectionId) {
-					CollectionAPI.getById(this.getCollection().apiRootUrl, this.getCollection().collectionId)
+				this.setState({ title: this.constructTitle() })
+				if (this.getState().apiRootUrl && this.getState().collectionId) {
+					CollectionAPI.getById(this.getState().apiRootUrl, this.getState().collectionId)
 						.then(
 							(response) => {
 								const collection: GetCollectionDto = response.data;
@@ -67,11 +73,12 @@ export default class CollectionComponent extends React.Component<any> {
 
 	}
 
-	getCollection = () => {
+	getState = () => {
 		return this.state
 	}
 
 	onFormSubmit = (e: React.SyntheticEvent) => {
+
 		e.preventDefault();
 		const target = e.target as typeof e.target & {
 			'api-root': { value: string },
@@ -84,9 +91,14 @@ export default class CollectionComponent extends React.Component<any> {
 		CollectionAPI.getById(apiRootInput, collectionId)
 			.then(
 				(response) => {
-					const apiRoot = response.data;
+					const collection = response.data;
 					this.setState({
-						collection: []
+						collection: collection,
+						apiRootUrl: apiRootInput,
+						collectionId: collectionId
+					})
+					this.setState({
+						title: this.constructTitle(),
 					})
 				}
 			).catch((err) => {
@@ -96,8 +108,8 @@ export default class CollectionComponent extends React.Component<any> {
 
 	render() {
 		return (<>
-			<ErrorModal show={this.getCollection().show} handleClose={this.hideModal} >
-				{this.getCollection().error}
+			<ErrorModal show={this.getState().show} handleClose={this.hideModal} >
+				{this.getState().error}
 			</ErrorModal>
 			<form onSubmit={this.onFormSubmit} className="mb-16">
 				<label htmlFor="price" className="block font-medium text-gray-700">
@@ -110,7 +122,7 @@ export default class CollectionComponent extends React.Component<any> {
 						id="api-root"
 						className="h-16 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 text-sm sm:text-lg border-gray-300 rounded-md"
 						placeholder="api-root"
-						defaultValue={this.getCollection().apiRootUrl}
+						defaultValue={this.getState().apiRootUrl}
 					/>
 				</div>
 				<label htmlFor="price" className="block font-medium text-gray-700">
@@ -123,7 +135,7 @@ export default class CollectionComponent extends React.Component<any> {
 						id="collectionId"
 						className="h-16 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 text-sm sm:text-lg border-gray-300 rounded-md"
 						placeholder="collectionId"
-						defaultValue={this.getCollection().collectionId}
+						defaultValue={this.getState().collectionId}
 					/>
 				</div>
 				<div className="inset-y-0 right-0 flex items-center justify-end">
@@ -136,110 +148,61 @@ export default class CollectionComponent extends React.Component<any> {
 				</div>
 			</form>
 
-			<div className="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
-				<div className="px-4 py-5 sm:px-6">
-					<h3 className="text-lg leading-6 font-medium text-gray-900">{this.constructTitle()}</h3>
-				</div>
-				<div className="border-t border-gray-200">
-					<dl>
-						<div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-							<dt className="text-sm font-medium text-gray-500">id</dt>
-							<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-								{
-									this.getCollection().collection?.id
-								}
-							</dd>
-						</div>
-						<div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-							<dt className="text-sm font-medium text-gray-500">title</dt>
-							<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-								{
-									this.getCollection().collection?.title
+			<DescriptionList
+				listTitle={this.getState().title}
+			>
+				<DescriptionListItem
+					listItemTitle="id"
+					listItemData={this.getState().collection?.id}
+				/>
+				<DescriptionListItem
+					listItemTitle="title"
+					listItemData={this.getState().collection?.title}
+				/>
+				<DescriptionListItem
+					listItemTitle="description"
+					listItemData={this.getState().collection?.description}
+				/>
+				<DescriptionListItem
+					listItemTitle="alias"
+					listItemData={this.getState().collection?.alias}
+				/>
+				<DescriptionListItem
+					listItemTitle="can_read"
+					listItemData={this.getState().collection?.can_read}
+				/>
+				<DescriptionListItem
+					listItemTitle="can_write"
+					listItemData={this.getState().collection?.can_write}
+				/>
+				<DescriptionListSublist
+					listItemTitle="media_types"
+					dataMap={this.mapMediaTypes}
+				/>
 
-								}
-							</dd>
-						</div>
-						<div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-							<dt className="text-sm font-medium text-gray-500">description</dt>
-							<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-								{
-									this.getCollection().collection?.description
+			</DescriptionList>
 
-								}
-							</dd>
-						</div>
-						<div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-							<dt className="text-sm font-medium text-gray-500">alias</dt>
-							<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-								{
-									this.getCollection().collection?.alias
-
-								}
-							</dd>
-						</div>
-						<div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-							<dt className="text-sm font-medium text-gray-500">can_read</dt>
-							<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-								{
-									String(this.getCollection().collection?.can_read || '')
-								}
-							</dd>
-						</div>
-						<div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-							<dt className="text-sm font-medium text-gray-500">can_write</dt>
-							<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-								{
-									String(this.getCollection().collection?.can_write || '')
-								}
-							</dd>
-						</div>
-						<div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-							<dt className="text-sm font-medium text-gray-500">media_types</dt>
-							<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-								<ul className="p-1 border border-gray-200 rounded-md divide-y divide-gray-200">
-									{
-
-										this.getCollection().collection?.media_types
-											?
-											this.getCollection().collection?.media_types.map((type) => {
-												return (
-													<li className="flex items-center justify-between text-sm">
-														<div className="p-4 w-0 flex-1 flex items-center">
-															<span className="flex-1 w-0 truncate">
-																{type}
-															</span>
-														</div>
-													</li>
-												)
-											})
-											:
-											<></>
-									}
-								</ul>
-							</dd>
-						</div>
-					</dl>
-				</div >
-			</div >
 			{
-				this.getCollection().collectionId
-					? <div className="inset-y-0 right-0 flex items-center justify-end gap-2">
+				this.getState().collectionId
+					?
+					<div className="inset-y-0 right-0 flex items-center justify-end gap-2">
 						<NavLink
 							to={'/objects/get'}
 							className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-							state={{ apiRoot: this.getCollection().apiRootUrl, collectionId: this.getCollection().collectionId }}
+							state={{ apiRootUrl: this.getState().apiRootUrl, collectionId: this.getState().collectionId }}
 						>
 							Get Objects
 						</NavLink>
 						<NavLink
 							to={'/objects/post'}
 							className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-							state={{ apiRoot: this.getCollection().apiRootUrl, collectionId: this.getCollection().collectionId }}
+							state={{ apiRootUrl: this.getState().apiRootUrl, collectionId: this.getState().collectionId }}
 						>
 							Post Objects
 						</NavLink>
 					</div>
-					: <></>
+					:
+					<></>
 			}
 		</>
 		)
@@ -247,16 +210,37 @@ export default class CollectionComponent extends React.Component<any> {
 	}
 
 
-	private constructTitle(): React.ReactNode {
+	constructTitle = () => {
 
-		if (!this.getCollection().apiRootUrl) {
-			return ''
+		const apiRootUrl = this.getState().apiRootUrl
+		const collectionId = this.getState().collectionId
+
+		if (!apiRootUrl && !collectionId) {
+			return undefined
 		}
 
-		if (this.getCollection().apiRootUrl?.match(new RegExp(/\/+$/))) {
-			return (this.getCollection().apiRootUrl as string) + (this.getCollection().collectionId as string)
+		if (apiRootUrl?.match(new RegExp(/\/+$/))) {
+			return String(apiRootUrl + collectionId)
 		}
 
-		return (this.getCollection().apiRootUrl as string) + '/' + (this.getCollection().collectionId as string)
+		return apiRootUrl + '/' + collectionId
+	}
+
+	mapMediaTypes = () => {
+		return this.getState().collection?.media_types
+			?
+			this.getState().collection?.media_types.map((type) => {
+				return (
+					<li className="flex items-center justify-between text-sm">
+						<div className="p-4 w-0 flex-1 flex items-center">
+							<span className="flex-1 w-0 truncate">
+								{type}
+							</span>
+						</div>
+					</li>
+				);
+			})
+			:
+			<></>;
 	}
 }

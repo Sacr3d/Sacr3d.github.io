@@ -1,6 +1,6 @@
 import './App.css';
-import { Disclosure } from '@headlessui/react'
-import { MenuIcon, XIcon } from '@heroicons/react/outline';
+import { Disclosure, Menu, Transition } from '@headlessui/react'
+import { BellIcon, MenuIcon, TrashIcon, XIcon } from '@heroicons/react/outline';
 import {
 	BrowserRouter,
 	Routes,
@@ -10,9 +10,13 @@ import {
 import Discovery from './routes/discovery.route';
 import APIRoot from './routes/api-root.route';
 import Collection from './routes/collection.route';
-import ObjectsGet from './routes/object-get.route';
-import ObjectsPost from './routes/object-post.route';
 import Status from './routes/status.route';
+
+import SLLogo from './logo.svg';
+import { ObjectsGet, ObjectsPost } from './routes/object.route';
+import { Fragment } from 'react';
+import { ClearDBAPI } from './apis/ClearDB.api';
+
 
 interface CustomNavType {
 	name: string,
@@ -28,15 +32,16 @@ const navigation: CustomNavType[] = [
 	{ name: 'Get Objects', href: '/objects/get', current: false, route: ObjectsGet },
 	{ name: 'Post Objects', href: '/objects/post', current: false, route: ObjectsPost },
 	{ name: 'Statuses', href: '/status', current: false, route: Status }
-
-
 ]
-
 
 function classNames(...classes: string[]) {
 	return classes.filter(Boolean).join(' ')
 }
 
+const clearDB = async () => {
+
+	ClearDBAPI.clear()
+}
 
 function App() {
 	return (
@@ -49,6 +54,7 @@ function App() {
         <body class="h-full">
         ```
       */}
+
 			<BrowserRouter>
 				<div className="min-h-full">
 					<Disclosure as="nav" className="bg-gray-800">
@@ -60,8 +66,8 @@ function App() {
 											<div className="flex-shrink-0">
 												<img
 													className="h-8 w-8"
-													src="logo.svg"
-													alt="Workflow"
+													src={SLLogo}
+													alt="CyberKit4SME"
 												/>
 											</div>
 											<div className="hidden md:block">
@@ -82,6 +88,46 @@ function App() {
 												</div>
 											</div>
 										</div>
+
+										<div className="hidden md:block">
+											<div className="ml-4 flex items-center md:ml-6">
+
+												{/* Profile dropdown */}
+												<Menu as="div" className="ml-3 relative">
+													<div>
+														<Menu.Button
+															className="bg-red-700 p-1 rounded-full hover:text-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
+														>
+															<TrashIcon className="h-6 w-6" aria-hidden="true" />
+														</Menu.Button>
+													</div>
+													<Transition
+														as={Fragment}
+														enter="transition ease-out duration-100"
+														enterFrom="transform opacity-0 scale-95"
+														enterTo="transform opacity-100 scale-100"
+														leave="transition ease-in duration-75"
+														leaveFrom="transform opacity-100 scale-100"
+														leaveTo="transform opacity-0 scale-95"
+													>
+														<Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+															{
+																<Menu.Item>
+																	<a
+																		href='/#'
+																		className='bg-gray-100 block px-4 py-2 text-sm text-gray-700'
+																		onClick={() => clearDB()}
+																	>
+																		ClearDB
+																	</a>
+																</Menu.Item>
+															}
+														</Menu.Items>
+													</Transition>
+												</Menu>
+											</div>
+										</div>
+
 										<div className="-mr-2 flex md:hidden">
 											{/* Mobile menu button */}
 											<Disclosure.Button className="bg-gray-800 inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
@@ -131,3 +177,5 @@ function App() {
 }
 
 export default App;
+
+

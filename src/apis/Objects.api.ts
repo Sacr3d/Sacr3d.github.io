@@ -5,13 +5,17 @@ export const ObjectsAPI = {
 	// 	const normalizedUrl = normalizeUrl(apiRootUrl)
 	// 	return axios.get(normalizedUrl + 'collections');
 	// },
-	getAllByCollectionId: function (apiRootUrl: string, collectionId: string, params: object) {
-		const normalizedUrl = normalizeUrl(apiRootUrl, collectionId)
-		return axios.get(normalizedUrl + '/objects', {
-			params: {
-				...params
-			}
-		});
+	getAllByCollectionId: function (apiRootUrl?: string, collectionId?: string, params?: object) {
+		if (apiRootUrl && collectionId) {
+			const normalizedUrl = normalizeUrl(apiRootUrl, collectionId)
+			return axios.get(normalizedUrl + '/objects', {
+				params: {
+					...params
+				}
+			})
+		} else {
+			return Promise.reject(Error('apiRootUrl or collectionId is undefined'))
+		}
 	},
 	postByCollectionId: function (apiRootUrl: string, collectionId: string, body: object) {
 		const normalizedUrl = normalizeUrl(apiRootUrl, collectionId)

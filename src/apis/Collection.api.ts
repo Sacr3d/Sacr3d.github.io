@@ -20,8 +20,6 @@ export const CollectionAPI = {
 }
 
 function normalizeUrl(apiRootUrl: string) {
-	console.log(apiRootUrl.length);
-
 	if (apiRootUrl.match(new RegExp(/\/+$/))) {
 		return apiRootUrl
 	}

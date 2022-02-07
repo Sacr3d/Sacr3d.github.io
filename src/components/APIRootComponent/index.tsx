@@ -1,11 +1,17 @@
+import { type } from "@testing-library/user-event/dist/type";
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { APITRootAPI } from "../../apis/APIRoot.api";
 import { CollectionAPI } from "../../apis/Collection.api";
 import CollectionButton from "../CollectionButton";
+import DescriptionList from "../DescriptionListComponent";
+import DescriptionListSingle from "../DescriptionListComponent/DescriptionListSingle";
+import DescriptionListItem from "../DescriptionListComponent/DescriptionListItem";
+import DescriptionListSublist from "../DescriptionListComponent/DescriptionListSublist";
 import ErrorModal, { ErrorDto } from "../ErrorModalComponent";
+import FormInput from "../FormComponent/FormInput";
 
-type GetCollectionDto = {
+type CollectionDto = {
 	id: string,
 	title: string,
 	description: string
@@ -15,6 +21,10 @@ type GetCollectionDto = {
 	media_types: string[]
 }
 
+type CollectionsDto = {
+	collections?: CollectionDto[]
+}
+
 type APIRootDto = {
 	title: string;
 	description?: string;
@@ -22,18 +32,18 @@ type APIRootDto = {
 	max_content_length: number;
 }
 
-type APIRootState = {
+interface IAPIRootState {
 	apiRoot?: APIRootDto
+	apiRootUrl?: string
+	collections: CollectionsDto
 	show: boolean
 	error: ErrorDto
-	apiRootUrl?: string
-	collections: GetCollectionDto[]
 	gotCollection: boolean
 }
 
 export default class APIRootComponent extends React.Component<any> {
 
-	public state: APIRootState = {
+	public state: IAPIRootState = {
 		apiRoot: undefined,
 		show: false,
 		error: {
@@ -43,7 +53,7 @@ export default class APIRootComponent extends React.Component<any> {
 			details: {}
 		},
 		apiRootUrl: undefined,
-		collections: [],
+		collections: { collections: undefined },
 		gotCollection: false
 
 	}
@@ -55,11 +65,11 @@ export default class APIRootComponent extends React.Component<any> {
 	componentDidMount() {
 
 		this.setState({
-			apiRootUrl: this.props.apiRoot
+			apiRootUrl: this.props.apiRootUrl
 		},
 			() => {
-				if (this.getAPIRoot().apiRootUrl) {
-					APITRootAPI.get(this.getAPIRoot().apiRootUrl)
+				if (this.getState().apiRootUrl) {
+					APITRootAPI.get(this.getState().apiRootUrl)
 						.then(
 							(response) => {
 								const apiRoot: APIRootDto = response.data;
@@ -77,27 +87,25 @@ export default class APIRootComponent extends React.Component<any> {
 
 	}
 
-	getAPIRoot = () => {
+	getState = () => {
 		return this.state
 	}
 
 	getCollections = (e: React.SyntheticEvent) => {
 		e.preventDefault();
-		CollectionAPI.get(this.getAPIRoot().apiRootUrl)
+		CollectionAPI.get(this.getState().apiRootUrl)
 			.then((response) => {
 
-				const data = response.data
-				if (data // 👈 null and undefined check
-					&& Object.keys(data).length === 0
-					&& Object.getPrototypeOf(data) === Object.prototype) {
+				const collections: CollectionsDto = response.data
+				if (collections.collections) {
+					const collection = response.data;
 					this.setState({
-						collections: [],
+						collections: collection,
 						gotCollection: true
 					})
 				} else {
-					const collection = response.data;
 					this.setState({
-						collections: collection.collections,
+						collections: undefined,
 						gotCollection: true
 					})
 				}
@@ -132,146 +140,118 @@ export default class APIRootComponent extends React.Component<any> {
 
 	}
 
-	render() {
-		const popluateCollection =
-			(this.getAPIRoot().gotCollection === true && this.getAPIRoot().collections.length > 0) || this.getAPIRoot().gotCollection === false
-				?
-				this.getAPIRoot().collections?.map((collection) => {
-					return (
-						<li className="flex items-center justify-between text-sm">
-							<div className="p-4 w-0 flex-1 flex items-center">
-								<span className="flex-1 w-0 truncate">
-									{<NavLink
-										to='/collections'
-										state={{ apiRoot: this.getAPIRoot().apiRootUrl, collectionId: collection.id }}
-									>
-										{collection.id}
-									</NavLink>}
-								</span>
-							</div>
-						</li>
-					);
-				})
-				:
+	mapVersions = () => {
+		return this.getState().apiRoot?.versions?.map((version) => {
+			return (
 				<li className="flex items-center justify-between text-sm">
 					<div className="p-4 w-0 flex-1 flex items-center">
 						<span className="flex-1 w-0 truncate">
-							No collections found
+							{version}
 						</span>
 					</div>
-				</li>;
+				</li>
+			);
+		})
+	}
+
+
+	mapCollections = () => {
+		return this.getState().collections === undefined
+			?
+			<li className="flex items-center justify-between text-sm">
+				<div className="p-4 w-0 flex-1 flex items-center">
+					<span className="flex-1 w-0 truncate">
+						No collections found
+					</span>
+				</div>
+			</li>
+			:
+			this.getState().collections?.collections?.map((collection) => {
+				console.log(collection);
+
+				return (
+					<li className="flex items-center justify-between text-sm">
+						<div className="p-4 w-0 flex-1 flex items-center">
+							<span className="flex-1 w-0 truncate">
+								{<NavLink
+									to='/collections'
+									state={{ apiRootUrl: this.getState().apiRootUrl, collectionId: collection.id }}
+								>
+									{collection.id}
+								</NavLink>}
+							</span>
+						</div>
+					</li>
+				);
+			})
+	}
+	render() {
+
 		return (
 			<>
-				<ErrorModal show={this.getAPIRoot().show} handleClose={this.hideModal} >
-					{this.getAPIRoot().error}
+				<ErrorModal show={this.getState().show} handleClose={this.hideModal} >
+					{this.getState().error}
 				</ErrorModal>
+
 				<form onSubmit={this.onFormSubmit} className="mb-16">
-					<label htmlFor="price" className="block font-medium text-gray-700">
-						api-root
-					</label>
-					<div className="mt-1 relative rounded-md shadow-sm">
-						<input
-							type="text"
-							name="api-root"
-							id="api-root"
-							className="h-16 focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 text-sm sm:text-lg border-gray-300 rounded-md"
-							placeholder="api-root"
-							defaultValue={this.getAPIRoot().apiRootUrl}
-						/>
-						<div className="absolute inset-y-0 right-0 flex items-center">
-							<button
-								type="submit"
-								className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-							>
-								Submit
-							</button>
-						</div>
+					<FormInput
+						label="api-root"
+						height="h-16"
+						defaultValue={this.getState().apiRootUrl}
+					/>
+					<div className="inset-y-0 right-0 flex items-center justify-end">
+						<button
+							type="submit"
+							className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+						>
+							Submit
+						</button>
 					</div>
 				</form>
 
 
-				<div className="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
-					<div className="px-4 py-5 sm:px-6">
-						<h3 className="text-lg leading-6 font-medium text-gray-900">{this.getAPIRoot().apiRootUrl}</h3>
-					</div>
-					<div className="border-t border-gray-200">
-						<dl>
-							<div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-								<dt className="text-sm font-medium text-gray-500">title</dt>
-								<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-									{
-										this.getAPIRoot().apiRoot?.title
-									}
-								</dd>
-							</div>
-							<div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-								<dt className="text-sm font-medium text-gray-500">description</dt>
-								<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-									{
-										this.getAPIRoot().apiRoot?.description
 
-									}
-								</dd>
-							</div>
-							<div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-								<dt className="text-sm font-medium text-gray-500">versions</dt>
-								<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-									<ul className="p-1 border border-gray-200 rounded-md divide-y divide-gray-200">
-										{
-											this.getAPIRoot().apiRoot?.versions?.map((version) => {
-												return (
-													<li className="flex items-center justify-between text-sm">
-														<div className="p-4 w-0 flex-1 flex items-center">
-															<span className="flex-1 w-0 truncate">
-																{version}
-															</span>
-														</div>
-													</li>
-												)
-											})
-										}
-									</ul>
-								</dd>
-							</div>
-							<div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-								<dt className="text-sm font-medium text-gray-500">max_content_length</dt>
-								<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-									{
-										this.getAPIRoot().apiRoot?.max_content_length
-									}
-								</dd>
-							</div>
-						</dl>
-					</div >
-				</div >
-				{
-					this.getAPIRoot().apiRoot?.title
-						? <CollectionButton apiRoot={this.getAPIRoot().apiRootUrl} onClick={this.getCollections} />
-						: (<></>)
-				}
+
+				<DescriptionList
+					listTitle={this.getState().apiRootUrl}
+				>
+					<DescriptionListItem
+						listItemTitle="title"
+						listItemData={this.getState().apiRoot?.title}
+					/>
+					<DescriptionListItem
+						listItemTitle="description"
+						listItemData={this.getState().apiRoot?.description}
+					/>
+					<DescriptionListSublist
+						listItemTitle="versions"
+						dataMap={this.mapVersions}
+					/>
+					<DescriptionListItem
+						listItemTitle="max_content_length"
+						listItemData={this.getState().apiRoot?.max_content_length}
+					/>
+
+				</DescriptionList>
+
+
+				<CollectionButton
+					apiRoot={this.getState().apiRootUrl}
+					onClick={this.getCollections}
+				/>
+
 
 				{
-					this.getAPIRoot().apiRoot
+					this.getState().apiRoot
 						?
-						<div className="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
-							<div className="px-4 py-5 sm:px-6">
-								<h3 className="text-lg leading-6 font-medium text-gray-900">Collections</h3>
-							</div>
-							<div className="border-t border-gray-200">
-								<dl>
-									<div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-										<dt className="text-sm font-medium text-gray-500">collections</dt>
-										<dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-											<ul className="p-1 border border-gray-200 rounded-md divide-y divide-gray-200">
-												{
-													popluateCollection
-												}
-											</ul>
-										</dd>
-									</div>
-								</dl>
-							</div >
-						</div >
+						<DescriptionListSingle
+							listTitle="Collections"
+						>
+							<DescriptionListSublist
+								listItemTitle="collections"
+								dataMap={this.mapCollections}
+							/>
+						</DescriptionListSingle>
 						:
 						<></>
 				}
