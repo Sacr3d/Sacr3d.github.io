@@ -9,9 +9,16 @@ COPY tailwind.config.js ./
 COPY postcss.config.js ./
 RUN npm install
 COPY src ./src
+COPY public ./public
 RUN ls -a
-RUN npm install
+RUN npm run build
 
-EXPOSE 3001
+## stage two
+FROM node:16.4.1-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --only=production
+COPY --from=0 /app/build ./build
 
-CMD ["npm", "run", "start"]
+EXPOSE 3000
+CMD ["npm", "run", "serve"]
