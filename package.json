@@ -1,7 +1,7 @@
 {
 	"name": "service-ledger-frontend",
 	"version": "0.1.0",
-	"homepage": "https://localhost:3001/build",
+	"homepage": "https://localhost:3000/build",
 	"dependencies": {
 		"@headlessui/react": "^1.4.3",
 		"@heroicons/react": "^1.0.5",
