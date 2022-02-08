@@ -217,7 +217,7 @@ export default class ObjectsGetComponent extends React.Component<any> {
 													listTitle={undefined}
 												>
 													{
-														this.unravelObject(object)
+														this.unravel(object)
 													}
 												</DescriptionList>
 											</td>
@@ -234,7 +234,8 @@ export default class ObjectsGetComponent extends React.Component<any> {
 
 	}
 
-	unravelObject(object: object): React.ReactElement<any, string | React.JSXElementConstructor<any>>[] {
+
+	unravel(object: object): React.ReactElement<any, string | React.JSXElementConstructor<any>>[] {
 		return Object.keys(object).map((key) => {
 
 			if (typeof object[key as keyof typeof object] === 'object') {
@@ -256,29 +257,48 @@ export default class ObjectsGetComponent extends React.Component<any> {
 			return (
 				<DescriptionListItem
 					listItemTitle={key}
-					listItemData={String(JSON.stringify(object[key as keyof typeof object]))
-					} />
+					listItemData={object[key as keyof typeof object]} />
 			);
 		});
 	}
-	unravelArray = (objects: object[]): any => {
-		console.log(objects);
 
+
+	unravelArray = (objects: object[]): any => {
 		return objects.map((object) => {
-			return (
-				<div className="p-1 border border-gray-200 rounded-md divide-y divide-gray-200 my-4">
-					{
-						Object.keys(object).map((key) => {
-							return (
-								<DescriptionListItem
-									listItemTitle={key}
-									listItemData={String(JSON.stringify(object[key as keyof typeof object]))}
-								/>
-							)
-						})
-					}
-				</div>
-			)
+			return typeof object === 'object'
+				?
+				this.unravelObjectArray(object)
+				:
+				this.unravelStringArray(object)
 		})
+	}
+
+	private unravelObjectArray(object: object): JSX.Element {
+		return (
+			<div className="p-1 border border-gray-200 rounded-md divide-y divide-gray-200 my-4">
+				{Object.keys(object).map((key) => {
+					return (
+						<DescriptionListItem
+							listItemTitle={key}
+							listItemData={object[key as keyof typeof object]} />
+					);
+				})}
+			</div>
+		)
+	}
+
+	private unravelStringArray(object: string): JSX.Element {
+		return (
+			<div className="p-1 border border-gray-200 rounded-md divide-y divide-gray-200 my-4">
+				{
+
+					<DescriptionListItem
+						listItemTitle=''
+						listItemData={object} />
+
+				}
+			</div>
+		)
+
 	}
 }
