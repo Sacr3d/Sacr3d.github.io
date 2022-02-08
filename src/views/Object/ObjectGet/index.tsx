@@ -14,7 +14,11 @@ export default function ObjectsGetView(props: IObjectsGetState) {
 			/>
 			<main>
 				<div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-					<ObjectsGetComponent apiRootUrl={props.apiRootUrl} collectionId={props.collectionId} objectId={props.objectId} />
+					<ObjectsGetComponent
+						apiRootUrl={props.apiRootUrl}
+						collectionId={props.collectionId}
+						objectId={props.objectId}
+						version={props.version} />
 				</div>
 			</main>
 		</>

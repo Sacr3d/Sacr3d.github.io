@@ -16,6 +16,7 @@ import SLLogo from './logo.svg';
 import { ObjectsGet, ObjectsPost } from './routes/object.route';
 import { Fragment } from 'react';
 import { ClearDBAPI } from './apis/ClearDB.api';
+import Version from './routes/version.route';
 
 
 interface CustomNavType {
@@ -31,7 +32,9 @@ const navigation: CustomNavType[] = [
 	{ name: 'Collections', href: '/collections', current: false, route: Collection },
 	{ name: 'Get Objects', href: '/objects/get', current: false, route: ObjectsGet },
 	{ name: 'Post Objects', href: '/objects/post', current: false, route: ObjectsPost },
-	{ name: 'Statuses', href: '/status', current: false, route: Status }
+	{ name: 'Statuses', href: '/status', current: false, route: Status },
+	{ name: 'Versions', href: '/version', current: false, route: Version }
+
 ]
 
 function classNames(...classes: string[]) {

@@ -1,6 +1,5 @@
 import { useLocation, useNavigate } from "react-router";
 import ObjectsPostComponent from "../components/ObjectsPostComponent";
-import ObjectsGetComponent from "../components/ObjectsGetComponent";
 import ObjectsGetView from "../views/Object/ObjectGet";
 
 
@@ -14,13 +13,15 @@ export interface IObjectsGetState {
 	apiRootUrl?: string
 	collectionId?: string
 	objectId?: string
+	version?: Date
 }
 
 function ObjectsGet() {
 	let objectsGetState: IObjectsGetState = {
 		apiRootUrl: undefined,
 		collectionId: undefined,
-		objectId: undefined
+		objectId: undefined,
+		version: undefined
 	}
 
 	const location = useLocation()
@@ -30,9 +31,14 @@ function ObjectsGet() {
 		objectsGetState.apiRootUrl = (state as Record<string, string>).apiRootUrl
 		objectsGetState.collectionId = (state as Record<string, string>).collectionId
 		objectsGetState.objectId = (state as Record<string, string>).objectId
+		objectsGetState.version = (state as Record<string, Date>).version
 	}
 	return (
-		<ObjectsGetView apiRootUrl={objectsGetState.apiRootUrl} collectionId={objectsGetState.collectionId} objectId={objectsGetState.objectId} />
+		<ObjectsGetView
+			apiRootUrl={objectsGetState.apiRootUrl}
+			collectionId={objectsGetState.collectionId}
+			objectId={objectsGetState.objectId}
+			version={objectsGetState.version} />
 	)
 }
 

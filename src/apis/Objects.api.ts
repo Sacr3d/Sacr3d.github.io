@@ -27,9 +27,9 @@ function normalizeUrl(apiRootUrl: string, collectionId: string) {
 	console.log(apiRootUrl.length);
 
 	if (apiRootUrl.match(new RegExp(/\/+$/))) {
-		return apiRootUrl + 'collections/' + collectionId
+		return String(apiRootUrl + 'collections/' + collectionId).replace(/ /g, '')
 	}
 
-	return apiRootUrl + '/collections/' + collectionId
+	return String(apiRootUrl + '/collections/' + collectionId).replace(/ /g, '')
 
 }

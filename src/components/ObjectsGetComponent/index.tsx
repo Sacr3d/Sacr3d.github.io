@@ -17,6 +17,7 @@ type ObjectsGetState = {
 	collectionId?: string
 	apiRootUrl?: string
 	objectId?: string,
+	version?: Date,
 	objects?: object[]
 	show: boolean;
 	error: ErrorDto;
@@ -28,6 +29,7 @@ export default class ObjectsGetComponent extends React.Component<any> {
 		collectionId: undefined,
 		apiRootUrl: undefined,
 		objectId: undefined,
+		version: undefined,
 		objects: undefined,
 		show: false,
 		error: {
@@ -47,7 +49,9 @@ export default class ObjectsGetComponent extends React.Component<any> {
 		this.setState({
 			apiRootUrl: this.props.apiRootUrl,
 			collectionId: this.props.collectionId,
-			objectId: this.props.objectId
+			objectId: this.props.objectId,
+			version: this.props.version
+
 		},
 			() => {
 				if (this.getState().apiRootUrl && this.getState().collectionId) {
@@ -97,16 +101,18 @@ export default class ObjectsGetComponent extends React.Component<any> {
 		const collectionId = target['collectionId'].value;
 
 		const params = {
-			'match[id]': options['object-id'].value || undefined,
-			'match[spec_version]': options['object-spec_version'].value || undefined,
-			'match[type]': options['object-type'].value || undefined,
-			'match[version]': options['object-version'].value || undefined,
+			'match[id]': options['object-id'].value.replace(/ /g, '') || undefined,
+			'match[spec_version]': options['object-spec_version'].value.replace(/ /g, '') || undefined,
+			'match[type]': options['object-type'].value.replace(/ /g, '') || undefined,
+			'match[version]': options['object-version'].value.replace(/ /g, '') || undefined,
 		}
 
 		ObjectsAPI.getAllByCollectionId(apiRootInput, collectionId, params)
 			.then(
 				(response) => {
 					const objects: GetObjectsDto = response.data;
+					console.log(`response : ${JSON.stringify(response, null, 2)}`);
+
 					if (objects.objects && objects.objects.length > 0) {
 						this.setState({
 							objects: objects.objects,
@@ -175,6 +181,13 @@ export default class ObjectsGetComponent extends React.Component<any> {
 							<FormInput
 								label="object-version"
 								height="h-8"
+								defaultValue={
+									this.getState().version
+										?
+										String(this.getState().version)
+										:
+										undefined
+								}
 							/>
 						</div>
 					</div>
@@ -226,7 +239,7 @@ export default class ObjectsGetComponent extends React.Component<any> {
 
 			if (typeof object[key as keyof typeof object] === 'object') {
 				const objectJson: unknown = object[key as keyof typeof object]
-				if (Array.isArray(objectJson))
+				if (Array.isArray(objectJson)) {
 					return (
 						<>
 							< DescriptionListSublistUnraveled
@@ -236,6 +249,7 @@ export default class ObjectsGetComponent extends React.Component<any> {
 							/>
 						</>
 					)
+				}
 			}
 
 
