@@ -7,7 +7,7 @@ COPY package*.json ./
 COPY tsconfig.json ./
 COPY tailwind.config.js ./
 COPY postcss.config.js ./
-COPY crago.config.js ./
+COPY craco.config.js ./
 
 RUN npm install
 COPY src ./src
