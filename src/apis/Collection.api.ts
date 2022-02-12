@@ -2,6 +2,8 @@ import axios from "axios";
 
 export const CollectionAPI = {
 	get: function (apiRootUrl?: string) {
+		console.log(`CollectionAPI::get(${apiRootUrl})`);
+
 		if (apiRootUrl) {
 			const normalizedUrl = normalizeUrl(apiRootUrl)
 			return axios.get(normalizedUrl + 'collections');

@@ -1,23 +1,22 @@
-import { useLocation, useNavigate } from "react-router";
-import ObjectsPostComponent from "../components/ObjectsPostComponent";
+import { useLocation } from "react-router";
 import ObjectsGetView from "../views/Object/ObjectGet";
+import ObjectsPostView from "../views/Object/ObjectPost";
 
-
-
-export interface IObjectsPostState {
-	apiRootUrl?: string
-	collectionId?: string
-}
-
-export interface IObjectsGetState {
+export interface IObjectsGetProps {
 	apiRootUrl?: string
 	collectionId?: string
 	objectId?: string
 	version?: Date
 }
 
+export interface IObjectsPostProps {
+	apiRootUrl?: string
+	collectionId?: string
+}
+
+
 function ObjectsGet() {
-	let objectsGetState: IObjectsGetState = {
+	let objectsGetState: IObjectsGetProps = {
 		apiRootUrl: undefined,
 		collectionId: undefined,
 		objectId: undefined,
@@ -44,16 +43,12 @@ function ObjectsGet() {
 
 
 function ObjectsPost() {
-	let objectsPostState: IObjectsPostState = {
+	let objectsPostState: IObjectsPostProps = {
 		apiRootUrl: undefined,
 		collectionId: undefined,
 	}
 
 	const location = useLocation()
-
-	let navigate = useNavigate();
-
-	console.log(location);
 
 	if (location.state) {
 		const { state } = location;
@@ -61,21 +56,13 @@ function ObjectsPost() {
 		objectsPostState.collectionId = (state as Record<string, string>).collectionId
 	}
 	return (
-		<>
-			<header className="bg-white shadow">
-				<div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-					<h1 className="text-3xl font-bold text-gray-900">ObjectsPosts</h1>
-				</div>
-			</header>
-			<main>
-				<div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-					{/* Replace with your content */}
-					<ObjectsPostComponent navigation={navigate} apiRootUrl={objectsPostState.apiRootUrl} collectionId={objectsPostState.collectionId} />
-					{/* /End replace */}
-				</div>
-			</main>
-		</>
+		<ObjectsPostView
+			apiRootUrl={objectsPostState.apiRootUrl}
+			collectionId={objectsPostState.collectionId}
+		/>
 	)
+
+
 }
 
 export { ObjectsGet, ObjectsPost }

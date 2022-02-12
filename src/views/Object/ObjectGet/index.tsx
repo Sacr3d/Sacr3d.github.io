@@ -1,11 +1,11 @@
 import Header from "../../../components/HeaderComponent";
-import ObjectsGetComponent from "../../../components/ObjectsGetComponent";
-import { IObjectsGetState } from "../../../routes/object.route";
+import ObjectsGetComponent from "../../../components/ObjectsComponent/ObjectsGet";
+import { IObjectsGetProps } from "../../../routes/object.route";
 
 
 
 
-export default function ObjectsGetView(props: IObjectsGetState) {
+export default function ObjectsGetView(props: IObjectsGetProps) {
 
 	return (
 		<>

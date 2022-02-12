@@ -1,7 +1,7 @@
 interface IFormInput {
 	label: string,
 	height: string
-	defaultValue?: string
+	defaultValue?: string | number | Date
 }
 
 export default function FormInput({ label, height, defaultValue }: IFormInput) {
@@ -19,7 +19,13 @@ export default function FormInput({ label, height, defaultValue }: IFormInput) {
 					id={label}
 					className={className}
 					placeholder={label}
-					defaultValue={defaultValue}
+					defaultValue={
+						defaultValue
+							?
+							String(defaultValue)
+							:
+							undefined
+					}
 				/>
 			</div>
 		</>

@@ -1,7 +1,7 @@
 
 interface IDescriptionListItem {
 	listItemTitle: string
-	listItemData?: string | number | boolean
+	listItemData?: string | number | boolean | Date
 }
 
 export default function DescriptionListItem({ listItemTitle, listItemData }: IDescriptionListItem) {

@@ -6,6 +6,8 @@ export const ObjectsAPI = {
 	// 	return axios.get(normalizedUrl + 'collections');
 	// },
 	getAllByCollectionId: function (apiRootUrl?: string, collectionId?: string, params?: object) {
+		console.log(`ObjectsAPI::getAllByCollectionId(${apiRootUrl}, ${collectionId})`);
+
 		if (apiRootUrl && collectionId) {
 			const normalizedUrl = normalizeUrl(apiRootUrl, collectionId)
 			return axios.get(normalizedUrl + '/objects', {
@@ -24,8 +26,6 @@ export const ObjectsAPI = {
 }
 
 function normalizeUrl(apiRootUrl: string, collectionId: string) {
-	console.log(apiRootUrl.length);
-
 	if (apiRootUrl.match(new RegExp(/\/+$/))) {
 		return String(apiRootUrl + 'collections/' + collectionId).replace(/ /g, '')
 	}

@@ -5,14 +5,14 @@ import VersionView from "../views/Version";
 
 
 
-export interface IVersionState {
+export interface IVersionProps {
 	apiRootUrl?: string
 	collectionId?: string
 	objectId?: string
 }
 
 export default function Version() {
-	let objectsGetState: IVersionState = {
+	let objectsGetState: IVersionProps = {
 		apiRootUrl: undefined,
 		collectionId: undefined,
 		objectId: undefined

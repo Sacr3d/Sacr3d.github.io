@@ -1,9 +1,9 @@
 import APIRootComponent from "../../components/APIRootComponent";
 import Header from "../../components/HeaderComponent";
-import { IAPIRootState } from "../../routes/api-root.route";
+import { IAPIRootProps } from "../../routes/api-root.route";
 
 
-export default function APIRootView(props: IAPIRootState) {
+export default function APIRootView(props: IAPIRootProps) {
 	return (
 		<>
 			<Header
@@ -11,9 +11,7 @@ export default function APIRootView(props: IAPIRootState) {
 			/>
 			<main>
 				<div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-					{/* Replace with your content */}
 					<APIRootComponent apiRootUrl={props.apiRootUrl} />
-					{/* /End replace */}
 				</div>
 			</main>
 		</>

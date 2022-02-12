@@ -1,128 +1,231 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
+import { CollectionAPI } from "../../apis/Collection.api";
+import { ObjectsAPI } from "../../apis/Objects.api";
 import { VersionAPI } from "../../apis/Version.api";
+import { DiscoveryDtoContext } from "../../App";
+import { IVersionProps } from "../../routes/version.route";
+import { createUniqueObjectArray } from "../../utils/CreateUniqueArray";
 import DescriptionListSingle from "../DescriptionListComponent/DescriptionListSingle";
 import DescriptionListSublist from "../DescriptionListComponent/DescriptionListSublist";
-import ErrorModal, { ErrorDto } from "../ErrorModalComponent";
-import FormInput from "../FormComponent/FormInput";
+import { FormOptionsInput } from "../FormComponent/FormOptions";
 
-type GetVersionDto = {
-	versions?: Date[]
-}
+const VersionComponent = ({ apiRootUrl, collectionId, objectId }: IVersionProps) => {
 
-interface IVersionState {
-	objectId?: string
-	collectionId?: string
-	apiRootUrl?: string
-	versions?: GetVersionDto
-	title?: string
-	show: boolean;
-	error: ErrorDto;
-}
-
-export default class VersionComponent extends React.Component<any> {
-
-	public state: IVersionState = {
-		collectionId: undefined,
-		apiRootUrl: undefined,
-		versions: undefined,
-		title: undefined,
-		show: false,
-		error: {
-			title: '',
-			description: '',
-			http_status: 0,
-			details: {}
-		},
-
+	interface ICollection {
+		id: string,
+		title: string,
+		description: string
+		alias: string,
+		can_read: boolean,
+		can_write: boolean,
+		media_types: string[]
 	}
 
-	hideModal = () => {
-		this.setState({ show: false });
-	};
-
-	componentDidMount() {
-		this.setState({
-			apiRootUrl: this.props.apiRootUrl,
-			collectionId: this.props.collectionId,
-			objectId: this.props.objectId
-		},
-			() => {
-				this.setState({ title: this.constructTitle() })
-				if (this.getState().apiRootUrl && this.getState().collectionId && this.getState().objectId) {
-					VersionAPI.getById(this.getState().apiRootUrl, this.getState().collectionId, this.getState().objectId)
-						.then(
-							(response) => {
-								const versions: GetVersionDto = response.data;
-								this.setState({
-									versions: versions,
-								})
-							}
-						).catch(function (error) {
-							alert(JSON.stringify(error, null, 2))
-						});
-				}
-			});
-
+	interface ICollections {
+		collections?: ICollection[]
 	}
 
-	getState = () => {
-		return this.state
+	interface IObjects {
+		objects?: object[]
+	}
+	interface IVersions {
+		versions?: Date[]
 	}
 
-	onFormSubmit = (e: React.SyntheticEvent) => {
+	const discoveryContext = useContext(DiscoveryDtoContext);
 
+
+	const [apiRootURLState, setAPIRootURL] = useState<string | undefined>(undefined);
+	const [collectionIdState, setCollectionId] = useState<string | undefined>(undefined);
+	const [objectIdState, setObjectId] = useState<string | undefined>(undefined);
+	useEffect(
+		() => {
+			if (apiRootUrl !== undefined)
+				setAPIRootURL(apiRootUrl)
+			else
+				setAPIRootURL(discoveryContext.default)
+
+			setCollectionId(collectionId)
+			setObjectId(objectId)
+
+		}, [apiRootUrl, collectionId, discoveryContext.default, objectId],
+	)
+
+	const [apiRootURLs, setAPIRootURLs] = useState<string[] | undefined>(undefined);
+	useEffect(
+		() => {
+			if (!apiRootURLState) {
+				setAPIRootURLs(discoveryContext.api_roots)
+			}
+		}, [apiRootURLState, discoveryContext.api_roots],
+	)
+
+	const [collections, setCollections] = useState<ICollections>({} as ICollections);
+	const [changingAPIRootURL, setChangingAPIRootURL] = useState<boolean>(true);
+	useEffect(
+		() => {
+			if (changingAPIRootURL && apiRootURLState) {
+
+				CollectionAPI.get(apiRootURLState)
+					.then(
+						(response) => {
+							const collections = response.data as ICollections
+							setCollections(collections)
+							setCollectionId(collections.collections?.at(0)?.id)
+							setChangingAPIRootURL(false)
+							setChangingCollectionId(true)
+						}
+					)
+					.catch(console.log)
+			}
+		}, [apiRootURLState, changingAPIRootURL],
+	)
+
+	const [objects, setObjects] = useState<IObjects>({} as IObjects);
+	const [changingCollectionId, setChangingCollectionId] = useState<boolean>(false);
+	useEffect(
+		() => {
+			if (changingCollectionId) {
+				ObjectsAPI.getAllByCollectionId(apiRootURLState, collectionIdState)
+					.then(
+						(response) => {
+							const objects = response.data as IObjects
+							objects.objects = createUniqueObjectArray(objects.objects)
+							setObjects(objects)
+
+							const object = objects.objects?.at(0)
+							if (object)
+								setObjectId(object['id' as keyof typeof object])
+
+							setChangingCollectionId(false)
+						}
+					)
+			}
+		}, [apiRootURLState, changingCollectionId, collectionIdState]
+	)
+
+	const [submitted, setSubmitted] = useState<boolean>(false);
+	const [versions, setVersions] = useState<IVersions>({} as IVersions);
+	useEffect(
+		() => {
+			if (submitted) {
+				VersionAPI.getById(apiRootURLState, collectionIdState, objectIdState)
+					.then(
+						(response) => {
+							const versions = response.data as IVersions
+							setVersions(versions)
+							setSubmitted(false)
+						}
+					)
+			}
+		}, [apiRootURLState, collectionIdState, objectIdState, submitted]
+	)
+
+
+	const submit = (e: React.SyntheticEvent) => {
 		e.preventDefault();
+		setSubmitted(true)
+	}
+
+	const apiRootSelected = (e: React.SyntheticEvent) => {
+		e.preventDefault();
+		console.log('apiRootSelected');
+
 		const target = e.target as typeof e.target & {
-			'api-root': { value: string },
-			'collectionId': { value: string },
-			'objectId': { value: string }
+			value: string
 		};
 
-		const apiRootInput = target['api-root'].value;
-		const collectionId = target['collectionId'].value;
-		const objectId = target['objectId'].value;
+		const apiRootURLTargetValue = target.value;
 
-		VersionAPI.getById(apiRootInput, collectionId, objectId)
-			.then(
-				(response) => {
-					const versions = response.data;
-					this.setState({
-						versions: versions,
-						apiRootUrl: apiRootInput,
-						collectionId: collectionId,
-						objectId: objectId
-					})
-					this.setState({
-						title: this.constructTitle(),
-					})
-				}
-			).catch((err) => {
-				this.setState({ show: true, error: err.response.data })
-			});
+		setAPIRootURL(apiRootURLTargetValue)
+		setChangingAPIRootURL(true)
 	}
 
-	render() {
-		return (<>
-			<ErrorModal show={this.getState().show} handleClose={this.hideModal} >
-				{this.getState().error}
-			</ErrorModal>
-			<form onSubmit={this.onFormSubmit} className="mb-16">
+	const collectionSelected = (e: React.SyntheticEvent) => {
+		e.preventDefault();
 
-				<FormInput
+		console.log('collectionSelected');
+
+		const target = e.target as typeof e.target & {
+			value: string
+		};
+
+		const collectionTargetValue = target.value;
+
+		setCollectionId(collectionTargetValue)
+		setChangingCollectionId(true)
+	}
+
+	const objectSelected = (e: React.SyntheticEvent) => {
+		e.preventDefault();
+
+		console.log('objectSelected');
+
+		const target = e.target as typeof e.target & {
+			value: string
+		};
+
+		const objectTargetValue = target.value;
+
+		setObjectId(objectTargetValue)
+	}
+
+	const mapVersions = ({ versions }: IVersions) => {
+		return versions
+			?
+			versions.map((version) => {
+				return (
+					<li className="flex items-center justify-between text-sm">
+						<div className="p-4 w-0 flex-1 flex items-center">
+							<span className="flex-1 w-0 truncate">
+								{
+									<NavLink
+										to='/objects/get'
+										state={
+											{
+												apiRootUrl: apiRootURLState,
+												collectionId: collectionIdState,
+												objectId: objectIdState,
+												version: version
+											}
+										}
+									>
+										{version}
+									</NavLink>
+								}
+							</span>
+						</div>
+					</li>
+				);
+			})
+			:
+			<></>;
+	}
+
+	return (
+		<>
+			{/* <ErrorModal show={this.getState().show} handleClose={this.hideModal} >
+				{this.getState().error}
+			</ErrorModal> */}
+			<form onSubmit={submit} className="mb-16">
+				<FormOptionsInput
 					label="api-root"
 					height="h-16"
-					defaultValue={this.getState().apiRootUrl}
+					options={apiRootURLs}
+					onChange={apiRootSelected}
 				/>
-				<FormInput
+				<FormOptionsInput
 					label="collectionId"
 					height="h-16"
-					defaultValue={this.getState().collectionId}
+					options={collections.collections?.map((collectionsCollection) => collectionsCollection.id)}
+					onChange={collectionSelected}
 				/>
-				<FormInput
+				<FormOptionsInput
 					label="objectId"
 					height="h-16"
-					defaultValue={this.getState().objectId}
+					options={objects.objects?.map((objectTarget) => objectTarget['id' as keyof typeof objectTarget])}
+					onChange={objectSelected}
 				/>
 				<div className="inset-y-0 right-0 flex items-center justify-end">
 					<button
@@ -133,66 +236,20 @@ export default class VersionComponent extends React.Component<any> {
 					</button>
 				</div>
 			</form>
-
 			<DescriptionListSingle
-				listTitle={this.getState().title}
+				listTitle={''}
 			>
 				<DescriptionListSublist
 					listItemTitle="versions"
-					dataMap={this.mapVersions}
+					dataMap={mapVersions(versions)}
 				/>
 
 			</DescriptionListSingle>
 		</>
-		)
+	)
 
-	}
-
-
-	constructTitle = () => {
-
-		const apiRootUrl = this.getState().apiRootUrl
-		const collectionId = this.getState().collectionId
-		const objectId = this.getState().objectId
-
-		if (!apiRootUrl || !collectionId || !objectId) {
-			return undefined
-		}
-
-		if (apiRootUrl?.match(new RegExp(/\/+$/))) {
-			return String(apiRootUrl + collectionId + '/objects/' + objectId + '/versions').replace(/ /g, '')
-		}
-
-		return String(apiRootUrl + '/' + collectionId + '/objects/' + objectId + '/versions').replace(/ /g, '')
-	}
-
-	mapVersions = () => {
-		return this.getState().versions?.versions
-			?
-			this.getState().versions?.versions?.map((version) => {
-				return (
-					<li className="flex items-center justify-between text-sm">
-						<div className="p-4 w-0 flex-1 flex items-center">
-							<span className="flex-1 w-0 truncate">
-								{<NavLink
-									to='/objects/get'
-									state={
-										{
-											apiRootUrl: this.getState().apiRootUrl,
-											collectionId: this.getState().collectionId,
-											objectId: this.getState().objectId,
-											version: version
-										}
-									}
-								>
-									{version}
-								</NavLink>}
-							</span>
-						</div>
-					</li>
-				);
-			})
-			:
-			<></>;
-	}
 }
+
+
+
+export default VersionComponent

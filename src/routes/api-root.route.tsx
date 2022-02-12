@@ -3,14 +3,14 @@ import { useLocation } from "react-router-dom";
 import APIRootView from "../views/APIRoot";
 
 
-export interface IAPIRootState {
+export interface IAPIRootProps {
 	apiRootUrl?: string
 }
 
 export default function APIRoot() {
 
 
-	let apiRootState: IAPIRootState = {
+	let apiRootState: IAPIRootProps = {
 		apiRootUrl: undefined
 	}
 

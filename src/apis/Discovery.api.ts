@@ -5,10 +5,10 @@ const axiosInstance = axios.create({
 });
 
 export const DiscoveryAPI = {
-	getAll: function () {
+	get: function () {
 		return axiosInstance.request({
 			method: "GET",
 			url: '/sltaxii2'
-		});
+		})
 	},
 }

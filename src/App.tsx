@@ -11,11 +11,13 @@ import APIRoot from './routes/api-root.route';
 import Collection from './routes/collection.route';
 import Status from './routes/status.route';
 
-import SLLogo from './logo.svg';
+import CyberKitLogo from './logo.svg';
 import { ObjectsGet, ObjectsPost } from './routes/object.route';
-import { Fragment } from 'react';
+import { createContext, Fragment, useEffect, useState } from 'react';
 import { ClearDBAPI } from './apis/ClearDB.api';
 import Version from './routes/version.route';
+import { DiscoveryAPI } from './apis/Discovery.api';
+import Discovering from './components/FindingDiscoveryComponent';
 
 
 interface CustomNavType {
@@ -45,7 +47,50 @@ const clearDB = async () => {
 	ClearDBAPI.clear()
 }
 
+interface DiscoveryDtoContextInterface {
+	title?: string
+	description?: string
+	contact?: string
+	default?: string
+	api_roots?: string[]
+}
+
+
+//set an empty object as default state
+export const DiscoveryDtoContext = createContext({} as DiscoveryDtoContextInterface);
+
+
 function App() {
+
+	type IDiscovery = {
+		title?: string
+		description?: string
+		contact?: string
+		default?: string
+		api_roots?: string[]
+	}
+
+	const [discovery, setDiscovery] = useState<IDiscovery>({} as IDiscovery);
+	const [discovering, setDiscovering] = useState(true);
+
+
+	useEffect(
+		() => {
+			const id = setInterval(() => {
+				DiscoveryAPI.get()
+					.then(
+						(response) => {
+							setDiscovery(response.data)
+							setDiscovering(false)
+							clearInterval(id)
+						}
+					).catch(console.log)
+			}, 2000)
+		},
+		[]
+	)
+
+
 	return (
 		<>
 			{/*
@@ -68,7 +113,7 @@ function App() {
 											<div className="flex-shrink-0">
 												<img
 													className="h-8 w-8"
-													src={SLLogo}
+													src={CyberKitLogo}
 													alt="CyberKit4SME"
 												/>
 											</div>
@@ -165,13 +210,25 @@ function App() {
 							</>
 						)}
 					</Disclosure>
-					<Routes>
-						{navigation.map((item) => (
-							<Route
-								path={item.href} element={<item.route />}
-							/>
-						))}
-					</Routes>
+					<Discovering
+						discovering={discovering}
+						setDiscovering={setDiscovering}
+					/>
+					<DiscoveryDtoContext.Provider
+						value={discovery}>
+						<Routes>
+							{
+								navigation.map(
+									(item) => (
+										<Route
+											path={item.href}
+											element={<item.route />}
+										/>
+									)
+								)
+							}
+						</Routes>
+					</DiscoveryDtoContext.Provider>
 				</div>
 			</BrowserRouter>
 		</>

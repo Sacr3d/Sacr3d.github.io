@@ -1,5 +1,6 @@
 import { useLocation } from "react-router";
 import StatusComponent from "../components/StatusComponent";
+import StatusView from "../views/Status";
 
 type StatusDto = {
 	id: number,
@@ -14,13 +15,14 @@ type StatusDto = {
 	pendings?: object[]
 }
 
-type StatusState = {
+export interface IStatusProps {
 	apiRootUrl?: string
 	statusDto?: StatusDto
-};
+}
+
 
 export default function Status() {
-	let statusState: StatusState = {
+	let statusProps: IStatusProps = {
 		apiRootUrl: undefined,
 		statusDto: undefined,
 	}
@@ -31,24 +33,15 @@ export default function Status() {
 
 	if (location.state) {
 		const { state } = location;
-		statusState.apiRootUrl = (state as Record<string, string>).apiRootUrl
-		statusState.statusDto = (state as Record<string, StatusDto>).statusDto || undefined
+		statusProps.apiRootUrl = (state as Record<string, string>).apiRootUrl
+		statusProps.statusDto = (state as Record<string, StatusDto>).statusDto || undefined
 	}
 
 	return (
-		<>
-			<header className="bg-white shadow">
-				<div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-					<h1 className="text-3xl font-bold text-gray-900">Status</h1>
-				</div>
-			</header>
-			<main>
-				<div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-					{/* Replace with your content */}
-					<StatusComponent apiRootUrl={statusState.apiRootUrl} statusDto={statusState.statusDto} />
-					{/* /End replace */}
-				</div>
-			</main>
-		</>
+		<StatusView
+			apiRootUrl={statusProps.apiRootUrl}
+			statusDto={statusProps.statusDto}
+		/>
+
 	)
 }
