@@ -59,15 +59,15 @@ const StatusComponent = ({ apiRootUrl, statusDto }: IStatusProps) => {
 				if (statusDto !== undefined)
 					setStatusId(statusDto.id)
 
-				setInit(false)
 			}
 
-			if (submitted) {
+			if (submitted || init) {
 				StatusAPI.getById(apiRootURLState, statusIdState)
 					.then(
 						(response) => {
 							setStatus(response.data)
 							setSubmitted(false)
+							setInit(false)
 						}
 					).catch(
 						(err) => {
@@ -151,7 +151,7 @@ const StatusComponent = ({ apiRootUrl, statusDto }: IStatusProps) => {
 			<FormInput
 				label="statusId"
 				height="h-16"
-				defaultValue={status.id}
+				defaultValue={statusIdState}
 			/>
 			<div className="inset-y-0 right-0 flex items-center justify-end">
 				<button
@@ -164,7 +164,7 @@ const StatusComponent = ({ apiRootUrl, statusDto }: IStatusProps) => {
 		</form>
 
 		<DescriptionList
-			listTitle="test"
+			listTitle=''
 		>
 			<DescriptionListItem
 				listItemTitle="id"
